@@ -1,0 +1,13 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Ajouter Produits{% endblock %}
+
+{% block body %}
+<div class="container w-50 shadow reounded mx-auto mt-5">
+
+    {{form_start(produits_form)}}
+    {{form_row(produits_form)}}
+    {{form_end(produits_form)}}
+
+</div>
+{% endblock %}

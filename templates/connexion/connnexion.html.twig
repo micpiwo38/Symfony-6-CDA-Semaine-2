@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+
+{% if error %}
+<div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+{% endif %}
+
+<div class="w-50 mx-auto">
+    <h2 class="text-center text-info">Connexion</h2>
+    <form action="{{ path('app_login') }}" method="post">
+        <label for="username">Email:</label>
+        <input class="form-control" type="text" id="username" name="_username" value="{{ last_username }}">
+
+        <label for="password">Password:</label>
+        <input class="form-control" type="password" id="password" name="_password">
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        {# If you want to control the URL the user is redirected to on success
+        <input type="hidden" name="_target_path" value="/account"> #}
+
+        <button class="btn btn-info mt-3" type="submit">Connexion</button>
+    </form>
+</div>
+
+{% endblock %}
