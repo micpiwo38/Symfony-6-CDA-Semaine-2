@@ -18,15 +18,16 @@
             <div class="card-body">
                 <h3> {{produit.name}}</h3>
                 <p class="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">{{produit.description}}</p>
-                <p>Catégories : {{produit.categorie.name}}</p>
+                <h5 class="text-success">Catégories : {{produit.categorie.name}}</h5>
                 <ul class="list-group">
+                    <h4 class="text-warning">Liste des ditributeurs : </h4>
                     {% for distributeur in produit.distributeur %}
                     <li class="list-group-item">{{ distributeur.name }}</li>
                     {% endfor %}
-                    </p>
+                    <h6 class="text-danger mt-3">Référence du produit : {{produit.reference.name}}</h6>
                     <time datetime="2020-03-16" class="text-gray-500">Posté le :
                         {{produit.createdAt|date('d/m/y')}}</time>
-                    <p>Prix : {{produit.price}} €</p>
+                    <p class="text-info">Prix : {{produit.price}} €</p>
                     <a href="" class="btn btn-warning">Détails du
                         produit</a>
             </div>

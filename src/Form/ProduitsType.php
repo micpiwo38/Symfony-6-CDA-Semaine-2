@@ -10,6 +10,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
@@ -21,30 +22,33 @@ class ProduitsType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', TextType::class,[
+            ->add('name', TextType::class,[//Champ de type <input type='text'/>
                 'label' => 'Nom du produit'
             ])
-            ->add('description', TextareaType::class,[
+            ->add('description', TextareaType::class,[//Champ de type <textarea></textarea>
                 'label' => 'Description du produit'
             ])
-            ->add('image', FileType::class,[
-                'required' => false,
-                'mapped' => false
+            ->add('image', FileType::class,[//Champ de type <input type='file'/>
+                'label' => 'Image du produit', 
+              
             ])
-            ->add('price', MoneyType::class,[
+            ->add('price', MoneyType::class,[//Champ de type <input type='text'/>
                 'label' => 'Prix du produit'
             ])
-            ->add('reference', ReferencesType::class)
-            ->add('distributeur', EntityType::class,[
-                'class' => Distributeurs::class,
-                'multiple' => true,
-                'choice_label' => 'name'
+            ->add('reference', ReferencesType::class,[//Imbriquer le formulaire ReferenceType 
+                'label' => 'Référence du produit' 
             ])
-            ->add('Categorie', EntityType::class,[
-                'class' => Categories::class,
-                'choice_label' => 'name' 
+            ->add('distributeur', EntityType::class,[//Champ de type Entité
+                'class' => Distributeurs::class,//Appel de l'entité src/Entity/Distributeurs.php
+                'multiple' => true,//Autorise plusieur entrées
+                'choice_label' => 'name'//Le champ de l'entité References à afficher
             ])
-            ->add('submit', SubmitType::class,[
+            ->add('Categorie', EntityType::class,[//Champ de type Entité
+                'label' => 'Catégorie du produit',
+                'class' => Categories::class,//Appel de l'entité src/Entity/Categories.php
+                'choice_label' => 'name' //Le champ de l'entité References à afficher
+            ])
+            ->add('submit', SubmitType::class,[//Champ de type <button type='submit'></button>
                 'label' => 'Ajouter produit'
             ])
         ;

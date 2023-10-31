@@ -3,10 +3,10 @@
 {% block title %}Ajouter Produits{% endblock %}
 
 {% block body %}
-<div class="container w-50 shadow reounded mx-auto mt-5">
-
+<div class="container w-50 shadow rounded mx-auto mt-5 p-3">
+    <h1 class="text-center text-warning">Ajouter un produit</h1>
     {{form_start(produits_form)}}
-    {{form_row(produits_form)}}
+    {{form(produits_form)}}
     {{form_end(produits_form)}}
 
 </div>
