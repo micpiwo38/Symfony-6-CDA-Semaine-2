@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Produits;
 use App\Events\AjouterProduitsEvent;
+use App\Events\EditerProduitsEvent;
 use App\Form\ProduitsType;
 use App\Repository\ProduitsRepository;
 use App\Service\ImageUploadService;
+use Doctrine\Migrations\EventDispatcher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,9 +20,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class ProduitsController extends AbstractController{
 
 
-    public function __construct(
-        private EventDispatcherInterface $dispatcher
-    ){}
+    
 
     #[Route('/produits', name:'app_produits')]
     /**
@@ -118,7 +118,8 @@ class ProduitsController extends AbstractController{
         Request $request, 
         EntityManagerInterface $em,
         Produits $produits,
-        SluggerInterface $sluggerInterface
+        SluggerInterface $sluggerInterface,
+        EventDispatcherInterface $dispatcher
         ) : Response {
         
         $form = $this->createForm(ProduitsType::class, $produits);
@@ -134,7 +135,14 @@ class ProduitsController extends AbstractController{
             $em->persist($produits);
             $em->flush();
 
-            //Appel de event dispatcher
+            //Utilisation de l'EventDispatcher
+            if($produits){
+                //Instance de la classe EditerProduitsEvent
+                $produits_event = new EditerProduitsEvent($produits);
+                //Le dispatcher distribue l'evenement
+                //La methode dispatche() prend en paramètre l'instance de l'evenement et le nom de l'evenement de la classe 
+                $dispatcher->dispatch($produits_event, EditerProduitsEvent::EDITER_PRODUIT);
+            }
            
 
             $this->addFlash('success', 'Votre produit à bien été ajouté !');

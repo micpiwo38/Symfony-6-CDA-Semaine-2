@@ -23,3 +23,7 @@ services:
     #App\EventListener\PageNotFindListener:
         #tags:
             #- { name: kernel.event_listener, event: kernel.exception }
+    #App\EventListener\EditerProduitsListener:
+        # nom = type de l'événement + event = nom de la constante de EditerProduitsEvent + method = nom de la methode a appeler EditerProduitsListener
+        #tags:
+            #- { name: kernel.event_listener, event: produits.editer, method: onEditerProduits }
