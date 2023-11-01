@@ -16,8 +16,7 @@
                     width="100%" />
             </div>
             <div class="card-body">
-                <h3> {{produit.name}}</h3>
-                <p class="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">{{produit.description}}</p>
+               
                 <h5 class="text-success">Catégories : {{produit.categorie.name}}</h5>
                 <ul class="list-group">
                     <h4 class="text-warning">Liste des ditributeurs : </h4>
@@ -25,10 +24,14 @@
                     <li class="list-group-item">{{ distributeur.name }}</li>
                     {% endfor %}
                     <h6 class="text-danger mt-3">Référence du produit : {{produit.reference.name}}</h6>
-                    <time datetime="2020-03-16" class="text-gray-500">Posté le :
-                        {{produit.createdAt|date('d/m/y')}}</time>
+                    <time datetime="2020-03-16" class="">Posté le :
+                        {{produit.createdAt|date('d/m/y')}} à : {{produit.createdAt|date('h:i:s')}}</time>
+                    
+                    <time  datetime="2020-03-16" class="text-secondary">Mise à jour le :
+                            {{produit.updatedAt|date('d/m/y')}} à : {{produit.updatedAt|date('h:i:s')}}</time>
+
                     <p class="text-info">Prix : {{produit.price}} €</p>
-                    <a href="" class="btn btn-warning">Détails du
+                    <a href="{{path('app_details_produit', {id: produit.id})}}" class="btn btn-warning">Détails du
                         produit</a>
             </div>
 

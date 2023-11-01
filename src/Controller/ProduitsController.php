@@ -23,12 +23,45 @@ class ProduitsController extends AbstractController{
     ){}
 
     #[Route('/produits', name:'app_produits')]
+    /**
+     * Afficher tous les produits via findAll() de ProduitsRepository et l'injection de dependance
+     *
+     * @param ProduitsRepository $produitsRepository
+     * @return Response
+     */
     public function afficherProduits(ProduitsRepository $produitsRepository) : Response {
-
+        $min = 200;
+        $max = 500;
+        $cat = 55;
+        $distributeur = 'quia';
         return $this->render('produits/afficher_produits.html.twig',[
-            'produits' => $produitsRepository->findAll()
+            'produits' => $produitsRepository->findAll(),
+            //Affiche les produits de la catégorie 35 trié par prix croissant
+            //'produits' => $produitsRepository->findBy(['categorie' => 35], ['price' => 'ASC']),
+            //'produits' =>$produitsRepository->getAllProductsByIdDescDQL()
+            //'produits' => $produitsRepository->getProductByPriceScale($min, $max)
+            //'produits' => $produitsRepository->getProductByCategory()
+            //'produits' => $produitsRepository->getLastProduct()
+            //'produits' => $produitsRepository->getByCategorie($cat),
+            //'produits' => $produitsRepository->getProductByDistributeur($cat, $distributeur)
         ]);
     }
+
+    #[Route('/details-produit/{id}', name:'app_details_produit')]
+    /**
+     * Afficher un produit par son id
+     *
+     * @param ProduitsRepository $produitsRepository
+     * @param integer $id
+     * @return Response
+     */
+    public function detailsProduit(ProduitsRepository $produitsRepository,int $id) : Response {
+        return $this->render('produits/details_produit.html.twig',[
+            //'produit' => $produitsRepository->find($id),
+            'produit' => $produitsRepository->findOneBy(['id' => $id], ['price' => 'ASC'])
+        ]);
+    }
+
 
 
     

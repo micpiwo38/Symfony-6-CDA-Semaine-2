@@ -30,6 +30,7 @@ class ProduitsType extends AbstractType
             ])
             ->add('image', FileType::class,[//Champ de type <input type='file'/>
                 'label' => 'Image du produit', 
+                'data_class' => null
               
             ])
             ->add('price', MoneyType::class,[//Champ de type <input type='text'/>
@@ -49,7 +50,7 @@ class ProduitsType extends AbstractType
                 'choice_label' => 'name' //Le champ de l'entité References à afficher
             ])
             ->add('submit', SubmitType::class,[//Champ de type <button type='submit'></button>
-                'label' => 'Ajouter produit'
+                'label' => 'Valider'
             ])
         ;
     }
