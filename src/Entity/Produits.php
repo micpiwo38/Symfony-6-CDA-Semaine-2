@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProduitsRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -27,9 +28,6 @@ class Produits
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $image = null;
-
     #[ORM\Column]
     private ?float $price = null;
 
@@ -41,17 +39,24 @@ class Produits
     private ?References $reference = null;
 
     #[ORM\ManyToOne(inversedBy: 'produits')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Categories $categorie = null;
 
     #[ORM\ManyToMany(targetEntity: Distributeurs::class, inversedBy: 'produits')]
     private Collection $distributeur;
+
+    #[ORM\OneToMany(mappedBy: 'produits', targetEntity: Photos::class, orphanRemoval: true, cascade:['persist','remove'])]
+    //Valide les objets et sous objets imbriqués
+    #[Assert\Count(min: 1)]
+    #[Assert\Valid]
+    private Collection $photos;
 
    
 
     public function __construct()
     {
         $this->distributeur = new ArrayCollection();
+        $this->photos = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -83,17 +88,6 @@ class Produits
         return $this;
     }
 
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    public function setImage(string $image): static
-    {
-        $this->image = $image;
-
-        return $this;
-    }
 
     public function getPrice(): ?float
     {
@@ -165,6 +159,36 @@ class Produits
     public function removeDistributeur(Distributeurs $distributeur): static
     {
         $this->distributeur->removeElement($distributeur);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Photos>
+     */
+    public function getPhotos(): Collection
+    {
+        return $this->photos;
+    }
+
+    public function addPhoto(Photos $photo): static
+    {
+        if (!$this->photos->contains($photo)) {
+            $this->photos->add($photo);
+            $photo->setProduits($this);
+        }
+
+        return $this;
+    }
+
+    public function removePhoto(Photos $photo): static
+    {
+        if ($this->photos->removeElement($photo)) {
+            // set the owning side to null (unless already changed)
+            if ($photo->getProduits() === $this) {
+                $photo->setProduits(null);
+            }
+        }
 
         return $this;
     }

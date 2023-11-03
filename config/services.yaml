@@ -4,7 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-
+    images_directory: '%kernel.project_dir%/public/img/'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -24,6 +24,6 @@ services:
         #tags:
             #- { name: kernel.event_listener, event: kernel.exception }
     #App\EventListener\EditerProduitsListener:
-        # nom = type de l'événement + event = nom de la constante de EditerProduitsEvent + method = nom de la methode a appeler EditerProduitsListener
+        #nom = type de l'événement + event = nom de la constante de EditerProduitsEvent + method = nom de la methode a appeler EditerProduitsListener
         #tags:
             #- { name: kernel.event_listener, event: produits.editer, method: onEditerProduits }

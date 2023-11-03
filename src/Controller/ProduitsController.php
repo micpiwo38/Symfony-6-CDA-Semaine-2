@@ -2,25 +2,24 @@
 
 namespace App\Controller;
 
+use App\Entity\Photos;
 use App\Entity\Produits;
-use App\Events\AjouterProduitsEvent;
-use App\Events\EditerProduitsEvent;
 use App\Form\ProduitsType;
-use App\Repository\ProduitsRepository;
+use App\Events\EditerProduitsEvent;
 use App\Service\ImageUploadService;
-use Doctrine\Migrations\EventDispatcher;
+use App\Repository\ProduitsRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class ProduitsController extends AbstractController{
-
-
-    
 
     #[Route('/produits', name:'app_produits')]
     /**
@@ -75,12 +74,14 @@ class ProduitsController extends AbstractController{
      */
     #[Route('/ajouter-produit', name:'app_ajouter_produit')]
     public function ajouterProduit(
+        ProduitsRepository $produitsRepository,
         Request $request, //Objet Request HttpFoundation
         EntityManagerInterface $em, //Gestionnaire d'entité
-        SluggerInterface $sluggerInterface //Transforme des valeurs en string
+        SluggerInterface $slugger //Transforme des valeurs en string
         ) : Response {
         
         $produits = new Produits();//Instance de l'entité Produits
+        $photosEntity = new Photos();
         //Creation du formulaire 2 paramètres : 
         //ProduitsType = formulaire de entité Produits + insatnce de l'entité Produits
         $form = $this->createForm(ProduitsType::class, $produits);
@@ -89,25 +90,44 @@ class ProduitsController extends AbstractController{
         //isSubmit() => tous les champs sont remplis
         //isSubmit() => Respect des règles de validation (Constraints, Voter, etc...)    
         if($form->isSubmitted() && $form->isValid()){
+            
+            $images_array = $form->get('photos')->getData();
+            //Le champ photos = tableau d'images produits['photos']['name']
+            //dd($images_array[0]->getName());
+            foreach($images_array as $image) {
+                //dd($image);
+                $photoObject = $image->setName(md5(uniqid(rand(), true)) . '.webp');
+                $photosEntity->setName($image->getName());
+                //dd($photoObject);
+               
+                $produits->addPhoto($photosEntity);
+                $this->addFlash('success', 'Vos photos ont biens ajoutées avec succès');   
+            }
+            
+            
+            $separator = '-';
             //Le slug n'aparaot pas dans le formulaire
             //Supprimer les espaces + recuperer la valeur du champ Name
-            $slug = trim($sluggerInterface->slug($form->get('name')->getData()));
+            $slug = trim($slugger->slug($form->get('name')->getData(), $separator)->lower());
             //Muter la valeur de $slug
             $produits->setSlug($slug);
             //Requète preparée => pas de query
             $em->persist($produits);
+    
             //Execution de la requète
             $em->flush();
             //Notification si le produit est ajouté via les FlashBags
             $this->addFlash('success', 'Votre produit à bien été ajouté !');
             //Redirection
             return $this->redirectToRoute('app_produits');
+         
         }
         //Appel de la vue qui affiche le formulaire
         return $this->render('produits/ajouter_produits.html.twig',[
             //Cle + valeur => generation du formulaire
             //La cle est appelée dans la vue Twig {{form(produits_form)}}
-            'produits_form' => $form->createView()
+            'produits_form' => $form->createView(),
+            'produits' => $produitsRepository->findAll()
         ]);
     }
 

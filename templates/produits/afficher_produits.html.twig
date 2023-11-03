@@ -12,11 +12,10 @@
     <div class="col-md-3 col-sm-12 mt-5">
         <div class="card h-100 mt-3">
             <div class="card-header">
-                <img src="{{produit.image}}" alt="{{produit.name}}" title="{{produit.name}}" class="card-img-top"
-                    width="100%" />
+                <img src="" title="{{produit.name}}" class="card-img-top" width="100%" />
             </div>
             <div class="card-body">
-               
+
                 <h5 class="text-success">Catégories : {{produit.categorie.name}}</h5>
                 <ul class="list-group">
                     <h4 class="text-warning">Liste des ditributeurs : </h4>
@@ -26,9 +25,9 @@
                     <h6 class="text-danger mt-3">Référence du produit : {{produit.reference.name}}</h6>
                     <time datetime="2020-03-16" class="">Posté le :
                         {{produit.createdAt|date('d/m/y')}} à : {{produit.createdAt|date('h:i:s')}}</time>
-                    
-                    <time  datetime="2020-03-16" class="text-secondary">Mise à jour le :
-                            {{produit.updatedAt|date('d/m/y')}} à : {{produit.updatedAt|date('h:i:s')}}</time>
+
+                    <time datetime="2020-03-16" class="text-secondary">Mise à jour le :
+                        {{produit.updatedAt|date('d/m/y')}} à : {{produit.updatedAt|date('h:i:s')}}</time>
 
                     <p class="text-info">Prix : {{produit.price}} €</p>
                     <a href="{{path('app_details_produit', {id: produit.id})}}" class="btn btn-warning">Détails du
