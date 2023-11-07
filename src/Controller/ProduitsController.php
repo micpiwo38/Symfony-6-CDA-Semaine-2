@@ -6,10 +6,12 @@ use App\Entity\Photos;
 use App\Entity\Produits;
 use App\Form\ProduitsType;
 use App\Events\EditerProduitsEvent;
+use App\Repository\PhotosRepository;
 use App\Service\ImageUploadService;
 use App\Repository\ProduitsRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -17,7 +19,8 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
+
+
 
 class ProduitsController extends AbstractController{
 
@@ -61,77 +64,77 @@ class ProduitsController extends AbstractController{
         ]);
     }
 
+    #[Route("/ajouter-produits", name:"app_ajouter_produit")]
+    public function ajouterProduits(
+        Request $request,
+        EntityManagerInterface $em,
+        SluggerInterface $slugger
+    ) : Response {
 
+        $product = new Produits();
 
-    
-    /**
-     * Methode ajouter un produit
-     *
-     * @param Request $request
-     * @param EntityManagerInterface $em
-     * @param ImageUploadService $imageUploadService
-     * @return Response
-     */
-    #[Route('/ajouter-produit', name:'app_ajouter_produit')]
-    public function ajouterProduit(
-        ProduitsRepository $produitsRepository,
-        Request $request, //Objet Request HttpFoundation
-        EntityManagerInterface $em, //Gestionnaire d'entité
-        SluggerInterface $slugger //Transforme des valeurs en string
-        ) : Response {
-        
-        $produits = new Produits();//Instance de l'entité Produits
-        $photosEntity = new Photos();
-        //Creation du formulaire 2 paramètres : 
-        //ProduitsType = formulaire de entité Produits + insatnce de l'entité Produits
-        $form = $this->createForm(ProduitsType::class, $produits);
-        //Analyse des champs du formulaire
+        $form = $this->createForm(ProduitsType::class, $product);
+
+        //Recup les attribut name via $_POST['name']
         $form->handleRequest($request);
-        //isSubmit() => tous les champs sont remplis
-        //isSubmit() => Respect des règles de validation (Constraints, Voter, etc...)    
+
         if($form->isSubmitted() && $form->isValid()){
-            
-            $images_array = $form->get('photos')->getData();
-            //Le champ photos = tableau d'images produits['photos']['name']
-            //dd($images_array[0]->getName());
-            foreach($images_array as $image) {
+            $datas = $request->files->all();
+            //Objet produits
+            //dd($datas);
+            $images = $datas['produits']['photos'];
+            //Tableau d'image
+            //dd($images);
+            //Boucle de parcours du tableau d'image
+            foreach($images as $image){
                 //dd($image);
-                $photoObject = $image->setName(md5(uniqid(rand(), true)) . '.webp');
-                $photosEntity->setName($image->getName());
-                //dd($photoObject);
-               
-                $produits->addPhoto($photosEntity);
-                $this->addFlash('success', 'Vos photos ont biens ajoutées avec succès');   
+                //Nom des images
+                $image_name = $image['name'];
+                $newPhoto = new Photos();
+                //$test = $image_name[0];
+                //dd($test);
+                //dd($image_name);
+                $original_name = pathinfo($image_name->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFileName = $slugger->slug($original_name);
+                $newFileName = $safeFileName.'-'.uniqid().'.'.$image_name->guessExtension();
+
+                $image_name->move(
+                    $this->getParameter('images_directory'),
+                    $newFileName
+                );
+
+                //dd($image_name);
+                //dd($fileSystem);
+
+                $newPhoto->setName($newFileName);
+                //$em->persist($newPhoto);
+                $product->addPhoto($newPhoto);
+                $separator = '-';
+                //Le slug n'aparaot pas dans le formulaire
+                //Supprimer les espaces + recuperer la valeur du champ Name
+                $slug = trim($slugger->slug($form->get('name')->getData(), $separator)->lower());
+                //Muter la valeur de $slug
+                $product->setSlug($slug);
+                $em->persist($newPhoto);
+                //execute la requète SQL
+                $em->flush();
             }
-            
-            
-            $separator = '-';
-            //Le slug n'aparaot pas dans le formulaire
-            //Supprimer les espaces + recuperer la valeur du champ Name
-            $slug = trim($slugger->slug($form->get('name')->getData(), $separator)->lower());
-            //Muter la valeur de $slug
-            $produits->setSlug($slug);
-            //Requète preparée => pas de query
-            $em->persist($produits);
-    
-            //Execution de la requète
+
+            $em->persist($product);
+            //execute la requète SQL
             $em->flush();
-            //Notification si le produit est ajouté via les FlashBags
-            $this->addFlash('success', 'Votre produit à bien été ajouté !');
-            //Redirection
+            //Si ca marche
+            $this->addFlash('success', 'Votre produit a bien été ajouté !');
             return $this->redirectToRoute('app_produits');
-         
         }
-        //Appel de la vue qui affiche le formulaire
+
         return $this->render('produits/ajouter_produits.html.twig',[
-            //Cle + valeur => generation du formulaire
-            //La cle est appelée dans la vue Twig {{form(produits_form)}}
-            'produits_form' => $form->createView(),
-            'produits' => $produitsRepository->findAll()
+            'produits_form' => $form->createView()
         ]);
     }
 
-    
+
+
     #[Route('/editer-produit/{name}', name:'app_editer_produit')]
    
     public function editerProduit(
@@ -139,7 +142,9 @@ class ProduitsController extends AbstractController{
         EntityManagerInterface $em,
         Produits $produits,
         SluggerInterface $sluggerInterface,
-        EventDispatcherInterface $dispatcher
+        EventDispatcherInterface $dispatcher,
+        PhotosRepository $photosRepository,
+        SluggerInterface  $slugger
         ) : Response {
         
         $form = $this->createForm(ProduitsType::class, $produits);
@@ -147,13 +152,57 @@ class ProduitsController extends AbstractController{
 
         if($form->isSubmitted() && $form->isValid()){
 
-            //Formater le nom du produit
-            trim($sluggerInterface->slug($produits->getName())->lower());
-          
-            //Appel de l'attribut prePersist -> et evenement => getCreatedValue pour generer la date Immutable
-            //dd($image);
-            $em->persist($produits);
-            $em->flush();
+
+            if($form->isSubmitted() && $form->isValid()){
+                $datas = $request->files->all();
+                //Objet produits
+                //dd($datas);
+                $images = $datas['produits']['photos'];
+                //Tableau d'image
+                //dd($images);
+                //Boucle de parcours du tableau d'image
+                foreach($images as $image){
+                    //dd($image);
+                    //Nom des images
+                    $image_name = $image['name'];
+                    $newPhoto = new Photos();
+                    //$test = $image_name[0];
+                    //dd($test);
+                    //dd($image_name);
+                    $original_name = pathinfo($image_name->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFileName = $slugger->slug($original_name);
+                    $newFileName = $safeFileName.'-'.uniqid().'.'.$image_name->guessExtension();
+
+                    $image_name->move(
+                        $this->getParameter('images_directory'),
+                        $newFileName
+                    );
+
+                    //dd($image_name);
+                    //dd($fileSystem);
+
+                    $newPhoto->setName($newFileName);
+                    //$em->persist($newPhoto);
+                    $produits->addPhoto($newPhoto);
+                    $separator = '-';
+                    //Le slug n'aparaot pas dans le formulaire
+                    //Supprimer les espaces + recuperer la valeur du champ Name
+                    $slug = trim($slugger->slug($form->get('name')->getData(), $separator)->lower());
+                    //Muter la valeur de $slug
+                    $produits->setSlug($slug);
+                    $em->persist($newPhoto);
+                    //execute la requète SQL
+                    $em->flush();
+                }
+
+                $em->persist($produits);
+                //execute la requète SQL
+                $em->flush();
+                //Si ca marche
+                $this->addFlash('success', 'Votre produit a bien été ajouté !');
+                return $this->redirectToRoute('app_produits');
+            }
+
 
             //Utilisation de l'EventDispatcher
             if($produits){
@@ -165,13 +214,20 @@ class ProduitsController extends AbstractController{
             }
            
 
-            $this->addFlash('success', 'Votre produit à bien été ajouté !');
+            $this->addFlash('success', 'Votre produit à bien été mis à jour !');
             return $this->redirectToRoute('app_produits');
         }
 
         return $this->render('produits/editer_produits.html.twig',[
-            'produits_form' => $form->createView()
+            'produits_form' => $form->createView(),
+            'images' => $photosRepository->findAll()
         ]);
+    }
+
+    #[Route('/supprimer-image/{id}', name:'app_supprimer_image')]
+    public  function supprimerImage():Response{
+
+        dd('supprimer des images');
     }
 
     

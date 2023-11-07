@@ -21,9 +21,11 @@ class CheckVerifiedUserSubscriber implements EventSubscriberInterface{
         if(!$user instanceof User){
             throw new \Exception('Utilisateur inconnu !');
         }
+        /*
         if(!$user->isVerified()){
             throw new AuthenticationException();
         }
+        */
     }
     
 }

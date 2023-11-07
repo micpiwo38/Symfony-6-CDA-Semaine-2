@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
+use App\Services\SendEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +27,13 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/inscription', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    public function register(
+        Request $request, 
+        UserPasswordHasherInterface $userPasswordHasher, 
+        EntityManagerInterface $entityManager,
+        SendEmailService $emailService
+        
+        ): Response
     {
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
@@ -44,14 +51,17 @@ class RegistrationController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // generer une URL signé et envoi d'email à l'utilisateur inscrit
-            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
-                (new TemplatedEmail())
-                    ->from(new Address('admin@test.fr', 'admin'))
-                    ->to($user->getEmail())
-                    ->subject('Confirmation du compte')
-                    ->htmlTemplate('registration/confirmation_email.html.twig')
-            );
+            //Utilisation de email service
+            $emailService->sendEmail(
+                'app_verify_email',
+                $user,
+                'admin@admin.com',
+                $user->getEmail(),
+                'Activation de votre compte',
+                'confirmation_email',
+                ['user' => $user]
+                );
+            
             
             $this->addFlash('warning', 'Merci de valider votre compte a l\'aide du lien envoyé sur votre boite email !');
             return $this->redirectToRoute('app_home');

@@ -1,31 +1,41 @@
 {% extends "base.html.twig" %}
 
-{% block title %}Détails Produits{% endblock %}
+{% block title %}Détails Produits
+{% endblock %}
 
 {% block body %}
-<div class="col-md-12 col-sm-12">
-    <div class="card h-100">
-        <div class="card-header text-center">
-            <img src="" alt="{{produit.name}}" title="{{produit.name}}" class="img-fluid" width="25%" />
-        </div>
-        <div class="card-body">
-            <h3> {{produit.name}}</h3>
-            <p class="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">{{produit.description}}</p>
-            <p>Catégories : {{produit.categorie.name}}</p>
-            <p class="text-sm leading-6">
-                {% for distributeur in produit.distributeur %}
-            <p>Distributeur(s) : {{ distributeur.name }}</p>
-            {% endfor %}
-            </p>
-            <time datetime="2020-03-16" class="text-gray-500">Posté le : {{produit.createdAt|date('d/m/y')}} à :
-                {{produit.createdAt|date('h:i:s')}}</time>
-            <p>Prix : {{produit.price}} €</p>
-            <a href="{{path('app_editer_produit',{name: produit.name})}}" class="btn btn-info">Editer le
-                produit</a>
-            <a href="{{path('app_produits')}}" class="btn btn-danger">Retour</a>
-        </div>
+	<div class="col-md-12 col-sm-12">
+		<div class="card h-100">
+			<div class="text-center">
+				{% for photos in produit.photos %}
+					<img src="{{ asset('img/' ~ photos.name) }}" title="" class="img-fluid mt-3" width="10%"  alt="" />
+				{% endfor %}
+			</div>
+			<div class="card-body">
+				<h3>
+					{{produit.name}}</h3>
+				<p class="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">{{produit.description}}</p>
+				<p>Catégories :
+					{{produit.categorie.name}}</p>
+				<p class="text-sm leading-6">
+					{% for distributeur in produit.distributeur %}
+						<p>Distributeur(s) :
+							{{ distributeur.name }}</p>
+					{% endfor %}
+				</p>
+				<time datetime="2020-03-16" class="text-gray-500">Posté le :
+					{{produit.createdAt|date('d/m/y')}}
+					à :
+					{{produit.createdAt|date('h:i:s')}}</time>
+				<p>Prix :
+					{{produit.price}}
+					€</p>
+				<a href="{{path('app_editer_produit',{name: produit.name})}}" class="btn btn-info">Editer le
+					                produit</a>
+				<a href="{{path('app_produits')}}" class="btn btn-danger">Retour</a>
+			</div>
 
-    </div>
-</div>
+		</div>
+	</div>
 
 {% endblock %}

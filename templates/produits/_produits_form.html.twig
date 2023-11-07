@@ -14,7 +14,7 @@
         {{form_row(produits_form.price)}}
 
 
-    <button type="button" data-collection="#photos" class="btn btn-info btn-ajouter"
+    <button type="button" class="btn btn-info btn-ajouter"
     data-collection="#photos">
     Ajouter une image
     </button>
@@ -25,10 +25,9 @@
         data-prototype="{{form_widget(produits_form.photos.vars.prototype)|e('html_attr')}}">
         {% for photo in produits_form.photos %}
      
-            {{form_row(photo.name)}}
+            {{form_row(photo)}}
             <button type="button" id="btn-supprimer" class="btn btn-danger mt-3">Supprimer</button>
-    
-        
+
         {% endfor %}
     </div>
 
@@ -42,7 +41,3 @@
 <script src="{{asset('js/upload_image.js')}}" type="module"></script>
 
 
-
-<script>
-
-</script>

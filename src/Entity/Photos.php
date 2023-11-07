@@ -6,6 +6,7 @@ use App\Repository\PhotosRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PhotosRepository::class)]
+#[UniqueEntity('name')]
 class Photos
 {
     #[ORM\Id]
@@ -16,7 +17,7 @@ class Photos
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\ManyToOne(inversedBy: 'photos')]
+    #[ORM\ManyToOne(inversedBy: 'photos', cascade:['persist'])]
     private ?Produits $produits = null;
 
     public function getId(): ?int
@@ -29,7 +30,7 @@ class Photos
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(string $name): self
     {
         $this->name = $name;
 
@@ -41,7 +42,7 @@ class Photos
         return $this->produits;
     }
 
-    public function setProduits(?Produits $produits): static
+    public function setProduits(?Produits $produits): self
     {
         $this->produits = $produits;
 

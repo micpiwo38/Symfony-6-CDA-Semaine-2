@@ -48,10 +48,10 @@ class ProduitsType extends AbstractType
             //CollectionType genere un data-protoype = gabarit de sous formulaire vide
             ->add('photos', CollectionType::class,[
                 'entry_type' => PhotosType::class,
-                'allow_add' => true,
-                'allow_delete' => true,
+                'allow_add' => true, //ajoute des items à la collection
+                'allow_delete' => true, //
                 'by_reference' => false,
-              
+                'mapped' => false
             ])  
         ;
     }
@@ -60,6 +60,7 @@ class ProduitsType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Produits::class,
+            'allow_file_upload' => true
         ]);
     }
 }

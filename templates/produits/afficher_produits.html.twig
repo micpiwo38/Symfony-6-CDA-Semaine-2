@@ -12,7 +12,9 @@
     <div class="col-md-3 col-sm-12 mt-5">
         <div class="card h-100 mt-3">
             <div class="card-header">
-                <img src="" title="{{produit.name}}" class="card-img-top" width="100%" />
+                {% for photos in produit.photos %}
+                    <img src="{{ asset('img/' ~ photos.name) }}" title="" class="card-img-top mt-3"  alt="" />
+                {% endfor %}
             </div>
             <div class="card-body">
 

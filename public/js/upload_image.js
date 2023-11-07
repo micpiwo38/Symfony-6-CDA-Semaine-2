@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
         item.appendChild(btnSupprimer);
 
 
-        collectionHolder.appendChild(item);
+        collectionHolder.append(item);
         collectionHolder.dataset.index++;
 
         document.querySelectorAll('.btn-supprimer').forEach(btn => btn.addEventListener('click', (e) =>

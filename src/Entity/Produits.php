@@ -45,11 +45,10 @@ class Produits
     #[ORM\ManyToMany(targetEntity: Distributeurs::class, inversedBy: 'produits')]
     private Collection $distributeur;
 
-    #[ORM\OneToMany(mappedBy: 'produits', targetEntity: Photos::class, orphanRemoval: true, cascade:['persist','remove'])]
+    #[ORM\OneToMany(mappedBy: 'produits', targetEntity: Photos::class, cascade:['persist'])]
     //Valide les objets et sous objets imbriqués
-    #[Assert\Count(min: 1)]
     #[Assert\Valid]
-    private Collection $photos;
+    private ?Collection $photos = null;
 
    
 
