@@ -30,9 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     };
 
-    //
-
-
-
     document.querySelectorAll('.btn-ajouter').forEach(btn => btn.addEventListener('click', addFormToCollection));
 });
+

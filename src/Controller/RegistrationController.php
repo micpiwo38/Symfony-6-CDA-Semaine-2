@@ -91,4 +91,38 @@ class RegistrationController extends AbstractController
 
         return $this->redirectToRoute('app_login');
     }
+
+    #[Route('/renoyer-validation', name: 'app_resend_verif')]
+    public function resendEmailVerification(SendEmailService $emailService):Response{
+        //Recuperer l'utilisateur connecter
+        $user = $this->getUser();
+        //dd($user);
+        //Si l'utilisateur n'est pas connecté
+        if(!$user){
+            $this->addFlash('danger', 'Merci de vous connectez pour acceder à cette page !');
+            return $this->redirectToRoute('app_login');
+        }
+
+        //Si utilisateur à deja verifié son compte
+        if($user->isVerified()){
+            $this->addFlash('warning', 'Votre compte à deja été activé !');
+            return $this->redirectToRoute('app_profile_index');
+        }
+        //Si l'utilisateur est connecté et que le compte n'est pas verifié
+        if($user){
+             //Utilisation de email service
+             $emailService->sendEmail(
+                'app_verify_email',
+                $user,
+                'admin@admin.com',
+                $user->getEmail(),
+                'Activation de votre compte',
+                'confirmation_email',
+                ['user' => $user]
+                );
+
+            $this->addFlash('success', 'Un email d\'activation a bien été envoyé  !');
+        }
+        return $this->render('email/envoi_verification.html.twig');
+    }
 }

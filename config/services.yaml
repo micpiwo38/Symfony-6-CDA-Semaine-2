@@ -27,3 +27,15 @@ services:
         #nom = type de l'événement + event = nom de la constante de EditerProduitsEvent + method = nom de la methode a appeler EditerProduitsListener
         #tags:
             #- { name: kernel.event_listener, event: produits.editer, method: onEditerProduits }
+    #services.yaml
+    #Liste des tags : symfony console debug:container --tags
+    App\Twig\CustomTwigExtension: # Assurez-vous que le chemin de la classe est correct
+        tags: ['twig.extension']
+          
+        
+         
+        
+  
+            
+
+

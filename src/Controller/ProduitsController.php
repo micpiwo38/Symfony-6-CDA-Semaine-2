@@ -7,22 +7,28 @@ use App\Entity\Produits;
 use App\Form\ProduitsType;
 use App\Events\EditerProduitsEvent;
 use App\Repository\PhotosRepository;
-use App\Service\ImageUploadService;
-use App\Repository\ProduitsRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Repository\ProduitsRepository;
+use App\Services\MessageService;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
-
 class ProduitsController extends AbstractController{
+
+   
+    #[Route('/produits/message-service', name:'app_produits_message_service')]
+    public function messageServiceProduit(){
+        $majuscule = "tous mettre en majuscule";
+       
+        return $this->render('services/messages.html.twig',[
+            'majuscule' => $majuscule
+        ]);
+    }
 
     #[Route('/produits', name:'app_produits')]
     /**
@@ -57,7 +63,7 @@ class ProduitsController extends AbstractController{
      * @param integer $id
      * @return Response
      */
-    public function detailsProduit(ProduitsRepository $produitsRepository,int $id) : Response {
+    public function detailsProduit(ProduitsRepository $produitsRepository, int $id) : Response {
         return $this->render('produits/details_produit.html.twig',[
             //'produit' => $produitsRepository->find($id),
             'produit' => $produitsRepository->findOneBy(['id' => $id], ['price' => 'ASC'])
@@ -220,16 +226,30 @@ class ProduitsController extends AbstractController{
 
         return $this->render('produits/editer_produits.html.twig',[
             'produits_form' => $form->createView(),
-            'images' => $photosRepository->findAll()
+            'images' => $photosRepository->findAll(),
+            'produits' => $produits
         ]);
     }
 
     #[Route('/supprimer-image/{id}', name:'app_supprimer_image')]
-    public  function supprimerImage():Response{
+    public  function supprimerImage(
+        Produits $produits,
+        Photos $photos,
+        PhotosRepository $photosRepository,
+        $id,
+        Request $request,
+        EntityManagerInterface  $em): Response
+    {
+        $photo = $photosRepository->find($id);
+        $delete = false;
+        if($photo){
+            $em->remove($photo);
+            $em->flush();
+            $delete = true;
 
-        dd('supprimer des images');
+            $this->addFlash('success', 'Le photo a bien été supprimer');
+            return $this->render('produits/editer_produits.html.twig');
+        }
     }
-
-    
 
 }

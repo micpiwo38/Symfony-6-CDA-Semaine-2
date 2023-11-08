@@ -8,7 +8,7 @@
     {% include 'produits/_produits_form.html.twig' %}
 
 
-        {% for image in images %}
+        {% for image in produits.photos %}
             <div>
                 <img class="img-fluid mt-3" src="{{asset('img/' ~ image.name)}}" alt="{{image.name}}" title="{{image.name}}" width="25%"/>
                 <a href="{{path('app_supprimer_image', {id: image.id})}}" data-delete data-token="{{csrf_token('delete' ~ image.id)}}" class="btn btn-danger mx-5">Supprimer l'image</a>

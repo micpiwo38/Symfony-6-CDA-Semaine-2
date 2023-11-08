@@ -32,5 +32,6 @@ class PageNotFindListener{
         //Si la requète HTTP echoue => on appel une vue Twig
         $content = $this->twig->render('notifications/page_not_found_exception.html.twig');
         $event->setResponse((new Response())->setContent($content));
+
     }
 }

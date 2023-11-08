@@ -1,0 +1,13 @@
+{% extends "base.html.twig" %}
+
+
+{% block title %}
+Validation compte
+{% endblock %}
+
+
+{% block body %}
+<div class="alert alert-warning mx-auto w-50 p-3">Un email de validation de compte a été renvoyé a l'addresse :
+    {{app.user.email}}
+</div>
+{% endblock %}
