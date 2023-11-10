@@ -48,10 +48,10 @@ class ProduitsType extends AbstractType
             //CollectionType genere un data-protoype = gabarit de sous formulaire vide
             ->add('photos', CollectionType::class,[
                 'entry_type' => PhotosType::class,
-                'allow_add' => true, //ajoute des items à la collection
-                'allow_delete' => true, //
-                'by_reference' => false,
-                'mapped' => false
+                'allow_add' => true, //Permet l'ajout d' item à une collection
+                'allow_delete' => true, //Permet la suppression d' item à une collection
+                'by_reference' => false, //S'assurer que le mutateur (setter) est appeler dans l'entité Produits et l'objet sous-jacent
+                'mapped' => false //Le champ est ignorer  a la lecture et ecriture de l'objet
             ])  
         ;
     }

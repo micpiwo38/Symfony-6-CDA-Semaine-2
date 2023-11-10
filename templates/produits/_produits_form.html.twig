@@ -1,43 +1,41 @@
 <div class="row">
- 
-        {{form_start(produits_form)}}
-        {{form_row(produits_form._token)}}
-        {{form_errors(produits_form)}}
-      
-        {{form_row(produits_form.name)}}
-        {{form_row(produits_form.reference)}}
-        {{form_row(produits_form.categorie)}}
+
+    {% for flash_message in app.flashes('danger') %}
+    <div class="alert alert-danger alert-dismissible fade show p-3 w-50 mx-auto mt-3" role="alert">
+        {{ flash_message }}
+        <button type=" button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+
+    {{form_start(produits_form)}}
+    {{form_row(produits_form._token)}}
+    {{form_errors(produits_form)}}
+
+    {{form_row(produits_form.name)}}
+    {{form_row(produits_form.reference)}}
+    {{form_row(produits_form.categorie)}}
 
 
-        {{form_row(produits_form.description)}}
-        {{form_row(produits_form.distributeur)}}
-        {{form_row(produits_form.price)}}
+    {{form_row(produits_form.description)}}
+    {{form_row(produits_form.distributeur)}}
+    {{form_row(produits_form.price)}}
 
 
-    <button type="button" class="btn btn-info btn-ajouter"
-    data-collection="#photos">
-    Ajouter une image
+    <button type="button" class="btn btn-info btn-ajouter" data-collection="#photos">
+        Ajouter une image
     </button>
-<!--On remplace __name__ par un index-->
 
-    <div class="list-group" id="photos"
+    <div class="list-group mt-3" id="photos"
         data-index="{{produits_form.photos|length > 0 ? produits_form.photos|last.vars.name + 1 : 0}}"
         data-prototype="{{form_widget(produits_form.photos.vars.prototype)|e('html_attr')}}">
-        {% for photo in produits_form.photos %}
-     
-            {{form_row(photo)}}
-            <button type="button" id="btn-supprimer" class="btn btn-danger mt-3">Supprimer</button>
 
-        {% endfor %}
     </div>
 
-<button type="submit" class="btn btn-success mt-3">Ajouter le produit</button>
+    <button type="submit" class="btn btn-success mt-3">Ajouter le produit</button>
 
 </div>
 
 <!--Si tous les champs ne sont pas afficher-->
-{{form_end(produits_form, {render_rest: false})}}
+{{form_end(produits_form)}}
 
-<script src="{{asset('js/upload_image.js')}}" type="module"></script>
-
-
+<script src="{{asset('js/upload_image.js')}}"></script>

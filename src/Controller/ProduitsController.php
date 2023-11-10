@@ -12,11 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Repository\ProduitsRepository;
 use App\Services\MessageService;
+use App\Services\SimpleUploadService;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ProduitsController extends AbstractController{
 
@@ -74,59 +75,54 @@ class ProduitsController extends AbstractController{
     public function ajouterProduits(
         Request $request,
         EntityManagerInterface $em,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        SimpleUploadService $simpleUploadService
     ) : Response {
 
-        $product = new Produits();
-
-        $form = $this->createForm(ProduitsType::class, $product);
-
+        $produits = new Produits();
+        $form = $this->createForm(ProduitsType::class, $produits);
         //Recup les attribut name via $_POST['name']
         $form->handleRequest($request);
-
         if($form->isSubmitted() && $form->isValid()){
-            $datas = $request->files->all();
-            //Objet produits
-            //dd($datas);
-            $images = $datas['produits']['photos'];
-            //Tableau d'image
-            //dd($images);
-            //Boucle de parcours du tableau d'image
-            foreach($images as $image){
-                //dd($image);
-                //Nom des images
-                $image_name = $image['name'];
-                $newPhoto = new Photos();
-                //$test = $image_name[0];
-                //dd($test);
-                //dd($image_name);
-                $original_name = pathinfo($image_name->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFileName = $slugger->slug($original_name);
-                $newFileName = $safeFileName.'-'.uniqid().'.'.$image_name->guessExtension();
+                $photos = $request->files->all();
+                //dd($photos);
+                if($photos == null){
+                    $this->addFlash('danger', 'Chaque produit doit contenir au moins une photo');
+                    return $this->redirectToRoute('app_ajouter_produit');
+                }else{
+                    //dd('on continue !');
+                    //Recuperer le tableau de photos
+                    $images = $photos['produits']['photos'];
+                    //dd($images);
+                    foreach($images as $image){
+                        //Instance de l'entité Photos
+                        $new_photos = new Photos();
+                        //Recuperer le nom de l'image
+                        $image_name = $image['name'];
+                        //Renomer et deplacer les photos a l'aide du service
+                        $new_photo = $simpleUploadService->uploadImage($image_name);
+                        //Ajouter les noms des photos a l'entité Photos
+                        //A l'aide du setter
+                        $new_photos->setName($new_photo);
+                        //Utiliser la methode addPhoto de l'entité Produits
+                        $produits->addPhoto($new_photos);
 
-                $image_name->move(
-                    $this->getParameter('images_directory'),
-                    $newFileName
-                );
+                        $separator = '-';
+                        //Le slug n'aparait pas dans le formulaire
+                        //Supprimer les espaces + recuperer la valeur du champ Name
+                        $slug = trim($slugger->slug($form->get('name')->getData(), $separator)->lower());
+                        //Muter la valeur de $slug
+                        $produits->setSlug($slug);
 
-                //dd($image_name);
-                //dd($fileSystem);
+                        //Persister l'entité Photos a l'aide de EntityManagerInterface
+                        $em->persist($new_photos);
+                        //Executer la requete INSERT INTO
+                        $em->flush();
 
-                $newPhoto->setName($newFileName);
-                //$em->persist($newPhoto);
-                $product->addPhoto($newPhoto);
-                $separator = '-';
-                //Le slug n'aparaot pas dans le formulaire
-                //Supprimer les espaces + recuperer la valeur du champ Name
-                $slug = trim($slugger->slug($form->get('name')->getData(), $separator)->lower());
-                //Muter la valeur de $slug
-                $product->setSlug($slug);
-                $em->persist($newPhoto);
-                //execute la requète SQL
-                $em->flush();
-            }
+                    }
+                }
 
-            $em->persist($product);
+            $em->persist($produits);
             //execute la requète SQL
             $em->flush();
             //Si ca marche
@@ -150,66 +146,59 @@ class ProduitsController extends AbstractController{
         SluggerInterface $sluggerInterface,
         EventDispatcherInterface $dispatcher,
         PhotosRepository $photosRepository,
-        SluggerInterface  $slugger
+        SluggerInterface  $slugger,
+        SimpleUploadService $simpleUploadService
         ) : Response {
         
         $form = $this->createForm(ProduitsType::class, $produits);
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()){
-
-
-            if($form->isSubmitted() && $form->isValid()){
-                $datas = $request->files->all();
-                //Objet produits
-                //dd($datas);
-                $images = $datas['produits']['photos'];
-                //Tableau d'image
+            $photos = $request->files->all();
+            //dd($photos);
+            if($photos == null){
+                $this->addFlash('danger', 'Chaque produit doit contenir au moins une photo');
+                return $this->redirectToRoute('app_ajouter_produit');
+            }else{
+                //dd('on continue !');
+                //Recuperer le tableau de photos
+                $images = $photos['produits']['photos'];
                 //dd($images);
-                //Boucle de parcours du tableau d'image
                 foreach($images as $image){
-                    //dd($image);
-                    //Nom des images
+                    //Instance de l'entité Photos
+                    $new_photos = new Photos();
+                    //Recuperer le nom de l'image
                     $image_name = $image['name'];
-                    $newPhoto = new Photos();
-                    //$test = $image_name[0];
-                    //dd($test);
-                    //dd($image_name);
-                    $original_name = pathinfo($image_name->getClientOriginalName(), PATHINFO_FILENAME);
-                    $safeFileName = $slugger->slug($original_name);
-                    $newFileName = $safeFileName.'-'.uniqid().'.'.$image_name->guessExtension();
+                    //Renomer et deplacer les photos a l'aide du service
+                    $new_photo = $simpleUploadService->uploadImage($image_name);
+                    //Ajouter les noms des photos a l'entité Photos
+                    //A l'aide du setter
+                    $new_photos->setName($new_photo);
+                    //Utiliser la methode addPhoto de l'entité Produits
+                    $produits->addPhoto($new_photos);
 
-                    $image_name->move(
-                        $this->getParameter('images_directory'),
-                        $newFileName
-                    );
-
-                    //dd($image_name);
-                    //dd($fileSystem);
-
-                    $newPhoto->setName($newFileName);
-                    //$em->persist($newPhoto);
-                    $produits->addPhoto($newPhoto);
                     $separator = '-';
-                    //Le slug n'aparaot pas dans le formulaire
+                    //Le slug n'aparait pas dans le formulaire
                     //Supprimer les espaces + recuperer la valeur du champ Name
                     $slug = trim($slugger->slug($form->get('name')->getData(), $separator)->lower());
                     //Muter la valeur de $slug
                     $produits->setSlug($slug);
-                    $em->persist($newPhoto);
-                    //execute la requète SQL
-                    $em->flush();
-                }
 
-                $em->persist($produits);
-                //execute la requète SQL
-                $em->flush();
-                //Si ca marche
-                $this->addFlash('success', 'Votre produit a bien été ajouté !');
-                return $this->redirectToRoute('app_produits');
+                    //Persister l'entité Photos a l'aide de EntityManagerInterface
+                    $em->persist($new_photos);
+                    //Executer la requete INSERT INTO
+                    $em->flush();
+
+                }
             }
 
-
+            $em->persist($produits);
+            //execute la requète SQL
+            $em->flush();
+            //Si ca marche
+            $this->addFlash('success', 'Votre produit a bien été ajouté !');
+            return $this->redirectToRoute('app_produits');
+    
             //Utilisation de l'EventDispatcher
             if($produits){
                 //Instance de la classe EditerProduitsEvent
@@ -219,37 +208,44 @@ class ProduitsController extends AbstractController{
                 $dispatcher->dispatch($produits_event, EditerProduitsEvent::EDITER_PRODUIT);
             }
            
-
             $this->addFlash('success', 'Votre produit à bien été mis à jour !');
             return $this->redirectToRoute('app_produits');
         }
 
         return $this->render('produits/editer_produits.html.twig',[
             'produits_form' => $form->createView(),
-            'images' => $photosRepository->findAll(),
-            'produits' => $produits
+            'photos' => $photosRepository->findBy(['produits' => $produits]),
+            'produit' => $produits
         ]);
     }
 
-    #[Route('/supprimer-image/{id}', name:'app_supprimer_image')]
+    #[Route('/supprimer-image-produits/{id}', name:'app_suppimer_image_produits', methods:['DELETE'])]
     public  function supprimerImage(
-        Produits $produits,
         Photos $photos,
-        PhotosRepository $photosRepository,
-        $id,
         Request $request,
-        EntityManagerInterface  $em): Response
+        EntityManagerInterface $em,
+        SimpleUploadService $simpleUploadService):JsonResponse
     {
-        $photo = $photosRepository->find($id);
-        $delete = false;
-        if($photo){
-            $em->remove($photo);
+        //json_decode = Prend une chaîne codée JSON et la convertit en une valeur PHP.
+       $data = json_decode($request->getContent(), true);
+       //Recupere le data-token du bouton + id de l'image et check si ca matche avec le token decoder
+       if($this->isCsrfTokenValid("delete" . $photos->getId(), $data['_token'])){
+        //Récuperation du nom de l'image
+        $photo_name = $photos->getName();
+        //Appel de la methode du service = 
+        //chemin de l'image + status (succes de la requete HTTP DELETE ou echec de la promesse) + supression du fichier
+        if($simpleUploadService->deleteImage($photo_name)){
+            //En cas de succès de la requète
+            //On supprimer le nom et la jointure de l'image au produit
+            $em->remove($photos);
+            //Execute le delete en BDD
             $em->flush();
-            $delete = true;
-
-            $this->addFlash('success', 'Le photo a bien été supprimer');
-            return $this->render('produits/editer_produits.html.twig');
+            $this->addFlash('success', 'La photo à bien été supprimer !');
+            return new JsonResponse(['success' => "La photo a bien été supprimée !"],200);
         }
+        $this->addFlash('danger', "La suppression de la photo a échoué !");
+        return new JsonResponse(['success' => "Erreur de supression de la photo !"],200);
+       }
+       return new JsonResponse(['error' => 'Le jeton est invalide'], 400);
     }
-
 }

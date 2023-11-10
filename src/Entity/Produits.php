@@ -46,8 +46,6 @@ class Produits
     private Collection $distributeur;
 
     #[ORM\OneToMany(mappedBy: 'produits', targetEntity: Photos::class, cascade:['persist'])]
-    //Valide les objets et sous objets imbriqués
-    #[Assert\Valid]
     private ?Collection $photos = null;
 
    

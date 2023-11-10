@@ -5,15 +5,57 @@
 {% block body %}
 <div class="container w-50 shadow rounded mx-auto mt-5 p-3">
     <h1 class="text-center text-warning">Editer le produit</h1>
-    {% include 'produits/_produits_form.html.twig' %}
+    <!---->
+    <div class="row">
 
-
-        {% for image in produits.photos %}
-            <div>
-                <img class="img-fluid mt-3" src="{{asset('img/' ~ image.name)}}" alt="{{image.name}}" title="{{image.name}}" width="25%"/>
-                <a href="{{path('app_supprimer_image', {id: image.id})}}" data-delete data-token="{{csrf_token('delete' ~ image.id)}}" class="btn btn-danger mx-5">Supprimer l'image</a>
-            </div>
+        {% for flash_message in app.flashes('danger') %}
+        <div class="alert alert-danger alert-dismissible fade show p-3 w-50 mx-auto mt-3" role="alert">
+            {{ flash_message }}
+            <button type=" button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
         {% endfor %}
 
+        {{form_start(produits_form)}}
+        {{form_row(produits_form._token)}}
+        {{form_errors(produits_form)}}
+
+        {{form_row(produits_form.name)}}
+        {{form_row(produits_form.reference)}}
+        {{form_row(produits_form.categorie)}}
+
+
+        {{form_row(produits_form.description)}}
+        {{form_row(produits_form.distributeur)}}
+        {{form_row(produits_form.price)}}
+
+
+        <button type="button" class="btn btn-info btn-ajouter" data-collection="#photos">
+            Ajouter une image
+        </button>
+
+        <div class="list-group mt-3" id="photos"
+            data-index="{{produits_form.photos|length > 0 ? produits_form.photos|last.vars.name + 1 : 0}}"
+            data-prototype="{{form_widget(produits_form.photos.vars.prototype)|e('html_attr')}}">
+
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">Ajouter le produit</button>
+
+    </div>
+
+    <!---->
+    {% for photo in produit.photos %}
+    <span class="img-container">
+        <img src="{{ asset('img/' ~ photo.name) }}" width="10%" class="img-fluid mx-3" alt="">
+        <a href="{{path('app_suppimer_image_produits', {id: photo.id})}}" data-delete
+            data-token="{{csrf_token('delete' ~ photo.id)}}" class="btn btn-warning btn-supprimer-photo">X</a>
+    </span>
+    {% endfor %}
 </div>
+
+<!--Si tous les champs ne sont pas afficher-->
+{{form_end(produits_form)}}
+
+<script src="{{asset('js/upload_image.js')}}"></script>
+
 {% endblock %}
