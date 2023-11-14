@@ -39,6 +39,7 @@ class ProduitsType extends AbstractType
                 'class' => Distributeurs::class,//Appel de l'entité src/Entity/Distributeurs.php
                 'multiple' => true,//Autorise plusieur entrées
                 'choice_label' => 'name',//Le champ de l'entité References à afficher
+                'expanded' => true,//Autorise la sélection de plusieurs entrées
             ])
             ->add('categorie', EntityType::class,[//Champ de type Entité
                 'label' => 'Catégorie du produit',

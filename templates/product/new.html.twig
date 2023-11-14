@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Product{% endblock %}
+
+{% block body %}
+<h1>Test de validation croisée</h1>
+<em>Documentation : <a href="https://symfony.com/doc/current/reference/constraints/Expression.html">Expression</a></em>
+<em><a href="https://symfony.com/doc/current/reference/constraints/Callback.html">Callback Constraints</a></em>
+
+{{ include('product/_form.html.twig') }}
+
+<a class="btn btn-info mt-3" href="{{ path('app_product_index') }}">Retour</a>
+{% endblock %}
